@@ -7,7 +7,7 @@ int main(void)
     // init 
     Image a(256, 256, "noise.txt");
 
-    a.filter(Gauss3x3, "gauss3x3Out.txt");
+    a.filter(Gauss3x3, "gauss3x3_out.txt");
 
     return 0;
 }
