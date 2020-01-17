@@ -1,21 +1,24 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <algorithm>
 #include "Image.h"
 using namespace std;
+
+#define medianFrom(list, size) (((size % 2) == 0) ? list[(size/2)-1] : list[((size+1)/2)-1])
 
 //######################## IMAGE CLASS ##############################
 void Image::init(int x , int y)
 {
     this->x = x;
     this->y = y;
-    this->field = new float*[x];
+    this->field = new double*[x];
     for (int i = 0; i < x; i++)
     {
-        this->field[i] = new float[y];
+        this->field[i] = new double[y];
         if(this->field[i]==NULL){
             cout<<"Kein Speicher"<<endl;
-            exit( 1 );
+            exit(1);
         }
         for (int j = 0; j < y; j++)
         {
@@ -136,25 +139,27 @@ Image operator+(Image a, Image b)
 }
 
 
-float Image::AverageGrey()
+double Image::averageGrey()
 {
-    float summe=0, count=0;
+    double summe=0.0;
+    int count=0;
 	for(int i=0; i<this->x; i++){
 		for(int j=0; j<this->y; j++){
-			summe += (float)this->field[i][j];
-			if(this->field[i][j]!=0)
+			summe += this->field[i][j];
+			if(this->field[i][j]!=0.0)
 				count++;
 		}
 	}
-	return summe/count;
+	return summe/(double)count;
 }
 
-float Image::Contrast(float m) // input Average Grey
+double Image::contrast(double m) // input Average Grey
 {
-	float summe=0, count=0;
+	double summe=0.0;
+    int count=0;
 	for(int i=0; i<this->x; i++){
 		for(int j=0; j<this->y; j++){
-			if(this->field[i][j]!=0){
+			if(this->field[i][j]!=0.0){
 				summe += (this->field[i][j]-m)*(this->field[i][j]-m);
 				count++;
 			}
@@ -163,7 +168,7 @@ float Image::Contrast(float m) // input Average Grey
 	return summe/count;
 }
 
-void Image::Histo(int buffer, string fname)
+void Image::histo(int buffer, string fname)
 {
     int *hist = new int[buffer];
     for (int i = 0; i < buffer; i++)
@@ -200,20 +205,20 @@ void Image::Histo(int buffer, string fname)
 void Image::filter(int mode, string fname)
 {
     Filter f(mode);
-    int u = ceil((f.GetSize()/2));
-    float s = (float)f.GetSum();
-    int fsize = f.GetSize(); 
+    int fsize = f.getSize(); 
+    int u = ceil((fsize/2));
+    double s = (double)f.getSum();
     Image bgauss(this->x, this->y);
 	for(int i = u; i < this->x - u; i++)
 	{
 		for (int j = u; j < this->y -u; j++)
 		{
-			float summe = 0.0;
+			double summe = 0.0;
 			for(int k = 0; k < fsize; k++)
 			{
 				for (int l = 0; l < fsize; l++)
 				{
-					summe += (float)this->field[i-u+k][j-u+l] * (float)f[k][l];
+					summe += this->field[i-u+k][j-u+l] * (double)f[k][l];
 				}			
 			}
 			summe /= s;
@@ -221,6 +226,33 @@ void Image::filter(int mode, string fname)
 		}
 	}
 	bgauss.write(fname);
+}
+
+void Image::medianFilter(int d, string fname)
+{
+    int size = d*d;
+    double list[size];
+    int listIndex = 0;
+    int u = ceil((d/2));
+    Image out(this->x, this->y);
+	for(int i = u; i < this->x - u; i++)
+	{
+		for (int j = u; j < this->y -u; j++)
+        {
+            for (int k = i-u; k < d+(i-u); k++)
+            {
+                for (int l = j-u; l < d+(j-u); l++)
+                {
+                    list[listIndex++] = this->field[k][l];
+                }
+            }
+            sort(&(list[0]), &(list[size]));
+			out.field[i][j] =  medianFrom(list, size);
+            fill(list, list+size, 0.0);
+            listIndex =0;
+		}
+	}
+	out.write(fname);
 }
 
 
@@ -323,9 +355,9 @@ Filter::Filter(int mode)
         {
             this->init(3);
             int gfilter[3][3] = { 
-                {1, 2 , 1}, 
-                {0, 0 ,0 }, 
-                {-1, -2 ,-1}
+                {1,   2,  1}, 
+                {0,   0,  0}, 
+                {-1, -2, -1}
             };
             for (int i = 0; i < this->x; i++)
             {
@@ -351,5 +383,5 @@ Filter::~Filter()
     {
         delete[] mask[i];
         mask[i] = NULL;
-    }
+    }   
 }   

@@ -7,10 +7,9 @@ class Filter
         Filter(int);
         ~Filter();
         int* operator[](int x){return this->mask[x];};
-        int GetSum()const {return this->sum;};
-        int GetSize()const {return this->x;};
+        int getSum()const {return this->sum;};
+        int getSize()const {return this->x;};
         friend void operator<<(std::ostream &, Filter &);
-
     private:
         void init(int);
         int x;
@@ -26,20 +25,21 @@ class Image
         Image(int,int);
         Image(int, int, std::string);
         ~Image();
-        float* operator[](int x){return this->field[x];};
+        double* operator[](int x){return this->field[x];};
         friend void operator<<(std::ostream &, Image &);
         friend Image operator+(Image, Image);
         void operator=(Image);
         void load(std::string);
         void write(std::string);
-        float AverageGrey();
-        float Contrast(float);
-        void Histo(int, std::string);
+        double averageGrey();
+        double contrast(double);
+        void histo(int, std::string);
         void filter(int, std::string);
+        void medianFilter(int dimensions, std::string fileName);
 
     private:
         void init(int,int);
         int x;
         int y;
-        float **field;
+        double **field;
 };
