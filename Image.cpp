@@ -237,7 +237,7 @@ void Image::medianFilter(int d, string fname)
     Image out(this->x, this->y);
 	for(int i = u; i < this->x - u; i++)
 	{
-		for (int j = u; j < this->y -u; j++)
+        for (int j = u; j < this->y -u; j++)
         {
             for (int k = i-u; k < d+(i-u); k++)
             {
@@ -247,7 +247,7 @@ void Image::medianFilter(int d, string fname)
                 }
             }
             sort(&(list[0]), &(list[size]));
-			out.field[i][j] =  medianFrom(list, size);
+            out.field[i][j] =  medianFrom(list, size);
             fill(list, list+size, 0.0);
             listIndex =0;
 		}
