@@ -33,9 +33,10 @@ class Image
         void write(std::string);
         double averageGrey();
         double contrast(double);
-        void histo(int, std::string);
+        void histo(std::string);
         void filter(int, std::string);
         void medianFilter(int dimensions, std::string fileName);
+        void histogramEqualization(std::string);
 
     private:
         void init(int,int);

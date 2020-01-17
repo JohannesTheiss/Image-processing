@@ -6,6 +6,7 @@
 using namespace std;
 
 #define medianFrom(list, size) (((size % 2) == 0) ? list[(size/2)-1] : list[((size+1)/2)-1])
+#define amount(x)  (x >= 0) ? x : -x;
 
 //######################## IMAGE CLASS ##############################
 void Image::init(int x , int y)
@@ -183,8 +184,16 @@ void Image::getGreyValues()
     }
 }
 
-void Image::histo(int buffer, string fname)
+void Image::histo(string fname)
 {
+    this->getGreyValues();
+
+    // shift the start point to the right, and make negative values "positive"
+    // a bit like IEEE 754
+    int bias = (int)amount(this->minGrey);
+    int buffer = (int)this->maxGrey + bias + 1; 
+    int zero =  bias;
+
     int *hist = new int[buffer];
     fill(hist, hist+buffer, 0);
 
@@ -192,29 +201,34 @@ void Image::histo(int buffer, string fname)
     {
         for (int j = 0; j < this->y; j++)
         {
-            hist[(int)floor(this->field[i][j] + 0.5)]++;
+            int nextInt = (int)floor(this->field[i][j] + 0.5);
+            hist[nextInt + bias]++;
         }    
     }
-
-    for (int i = 0; i < buffer; i++)
+    if(fname == "print")
     {
-        cout<<hist[i]<<"\n";
-    }
-
-    if(fname != "None")
-    {
-        ofstream fout(fname);
-        if(fout.fail())
-        {
-            cout<<"File Error >>> "<<fname<<endl;
-            exit(1);
-        }
-
         for (int i = 0; i < buffer; i++)
         {
-            fout<<hist[i]<<"\n";
+            cout<<i-bias<<": "<<hist[i]<<"\n"; // print the "real" values
         }
-        fout.close();
+    }
+    else
+    {    
+        if(fname != "None")
+        {
+            ofstream fout(fname);
+            if(fout.fail())
+            {
+                cout<<"File Error >>> "<<fname<<endl;
+                exit(1);
+            }
+
+            for (int i = 0; i < buffer; i++)
+            {
+                fout<<hist[i]<<"\n";
+            }
+            fout.close();
+        }
     }
     delete[] hist;
 }
@@ -271,6 +285,8 @@ void Image::medianFilter(int d, string fname)
 	}
 	out.write(fname);
 }
+
+
 
 
 //######################## FILTER CLASS ##############################

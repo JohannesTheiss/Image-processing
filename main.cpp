@@ -14,7 +14,7 @@ int main(void)
     // image.medianFilter(3, "out3.txt");
     // image.medianFilter(5, "out5.txt");
 
-    image.histo(20, "None");
+    image.histo("hist.txt");
 
 
     return 0;
