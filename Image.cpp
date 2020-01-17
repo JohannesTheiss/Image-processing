@@ -6,7 +6,8 @@
 using namespace std;
 
 #define medianFrom(list, size) (((size % 2) == 0) ? list[(size/2)-1] : list[((size+1)/2)-1])
-#define amount(x)  (x >= 0) ? x : -x;
+#define amount(x)  ((x >= 0) ? x : -x)
+#define round(x) (floor(x + 0.5))
 
 //######################## IMAGE CLASS ##############################
 void Image::init(int x , int y)
@@ -23,6 +24,8 @@ void Image::init(int x , int y)
         } 
         fill(this->field[i], this->field[i]+y, 0.0);
     } 
+
+    this->histo = NULL;
 }
 
 Image::Image(int x)
@@ -46,6 +49,9 @@ Image::~Image()
         delete[] field[i];
         field[i] = NULL;
     }
+
+    if(this->histo != NULL)
+        delete[] histo;
 }
 
 // print Image
@@ -141,8 +147,10 @@ double Image::averageGrey()
 {
     double summe=0.0;
     int count=0;
-	for(int i=0; i<this->x; i++){
-		for(int j=0; j<this->y; j++){
+	for(int i=0; i<this->x; i++)
+    {
+		for(int j=0; j<this->y; j++)
+        {
 			summe += this->field[i][j];
 			if(this->field[i][j]!=0.0)
 				count++;
@@ -155,9 +163,12 @@ double Image::contrast(double m) // input Average Grey
 {
 	double summe=0.0;
     int count=0;
-	for(int i=0; i<this->x; i++){
-		for(int j=0; j<this->y; j++){
-			if(this->field[i][j]!=0.0){
+	for(int i=0; i<this->x; i++)
+    {
+		for(int j=0; j<this->y; j++)
+        {
+			if(this->field[i][j]!=0.0)
+            {
 				summe += (this->field[i][j]-m)*(this->field[i][j]-m);
 				count++;
 			}
@@ -184,32 +195,30 @@ void Image::getGreyValues()
     }
 }
 
-void Image::histo(string fname)
+void Image::histogram(string fname)
 {
     this->getGreyValues();
-
+    // histogram stuff
     // shift the start point to the right, and make negative values "positive"
     // a bit like IEEE 754
-    int bias = (int)amount(this->minGrey);
-    int buffer = (int)this->maxGrey + bias + 1; 
-    int zero =  bias;
-
-    int *hist = new int[buffer];
-    fill(hist, hist+buffer, 0);
+    this->bias = (int)amount(this->minGrey);
+    this->buffer = (int)this->maxGrey + this->bias + 1; 
+    this->histo = new int[this->buffer];
+    fill(this->histo,  this->histo+this->buffer, 0);
 
     for (int i = 0; i < this->x; i++)
     {
         for (int j = 0; j < this->y; j++)
         {
-            int nextInt = (int)floor(this->field[i][j] + 0.5);
-            hist[nextInt + bias]++;
+            int nextInt = (int)round(this->field[i][j]);
+            this->histo[nextInt + this->bias]++;
         }    
     }
     if(fname == "print")
     {
-        for (int i = 0; i < buffer; i++)
+        for (int i = 0; i < this->buffer; i++)
         {
-            cout<<i-bias<<": "<<hist[i]<<"\n"; // print the "real" values
+            cout<<i-this->bias<<": "<<this->histo[i]<<"\n"; // print the "real" values
         }
     }
     else
@@ -223,14 +232,13 @@ void Image::histo(string fname)
                 exit(1);
             }
 
-            for (int i = 0; i < buffer; i++)
+            for (int i = 0; i < this->buffer; i++)
             {
-                fout<<hist[i]<<"\n";
+                fout<<this->histo[i]<<"\n";
             }
             fout.close();
         }
     }
-    delete[] hist;
 }
 
 void Image::filter(int mode, string fname)
@@ -286,6 +294,30 @@ void Image::medianFilter(int d, string fname)
 	out.write(fname);
 }
 
+
+void Image::histogramEqualization(string fname)
+{
+    // init histogram
+    this->histogram("None");
+
+    double pixelNumber = (double)(this->x*this->y);
+    Image out(this->x, this->y);
+    for (int i = 0; i < this->x; i++)
+    {
+        for (int j = 0; j < this->y; j++)
+        {
+            double sum = 0.0;
+            int oldGrey = (int)round(this->field[i][j]);
+            for(int k = this->minGrey; k < oldGrey; k++)
+            {
+                sum += this->histo[k+this->bias] / pixelNumber;
+            }
+            out[i][j] = (this->maxGrey - this->minGrey) * sum;
+        }
+    }
+    
+    out.write(fname);
+}
 
 
 

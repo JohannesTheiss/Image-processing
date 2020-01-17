@@ -33,7 +33,7 @@ class Image
         void write(std::string);
         double averageGrey();
         double contrast(double);
-        void histo(std::string);
+        void histogram(std::string);
         void filter(int, std::string);
         void medianFilter(int dimensions, std::string fileName);
         void histogramEqualization(std::string);
@@ -43,6 +43,9 @@ class Image
         void getGreyValues();
         double maxGrey;
         double minGrey;
+        int bias;
+        int *histo;
+        int buffer;
         int x;
         int y;
         double **field;
