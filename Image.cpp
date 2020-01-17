@@ -19,11 +19,8 @@ void Image::init(int x , int y)
         if(this->field[i]==NULL){
             cout<<"Out of Memory"<<endl;
             exit(1);
-        }
-        for (int j = 0; j < y; j++)
-        {
-            this->field[i][j] = 0.0;
-        }  
+        } 
+        fill(this->field[i], this->field[i]+y, 0.0);
     } 
 }
 
@@ -168,20 +165,40 @@ double Image::contrast(double m) // input Average Grey
 	return summe/count;
 }
 
+void Image::getGreyValues()
+{ 
+    double maxelem, minelem;
+    this->minGrey = *min_element(&(this->field[0][0]), &(this->field[0][this->y]));
+    this->maxGrey = *max_element(&(this->field[0][0]), &(this->field[0][this->y]));
+    for (int i = 1; i < this->x; i++)
+    {
+        minelem = *min_element(&(this->field[i][0]), &(this->field[i][this->y]));
+        maxelem = *max_element(&(this->field[i][0]), &(this->field[i][this->y]));
+
+        if(maxelem > this->maxGrey)
+            this->maxGrey = maxelem;
+    
+        if(minelem < this->minGrey)
+            this->minGrey = minelem;   
+    }
+}
+
 void Image::histo(int buffer, string fname)
 {
     int *hist = new int[buffer];
-    for (int i = 0; i < buffer; i++)
-    {
-        hist[i] = 0;
-    }
-    
+    fill(hist, hist+buffer, 0);
+
     for (int i = 0; i < this->x; i++)
     {
         for (int j = 0; j < this->y; j++)
         {
             hist[(int)floor(this->field[i][j] + 0.5)]++;
         }    
+    }
+
+    for (int i = 0; i < buffer; i++)
+    {
+        cout<<hist[i]<<"\n";
     }
 
     if(fname != "None")
@@ -269,10 +286,7 @@ void Filter::init(int nx)
             cout<<"Mem. Error"<<endl;
             exit(1);
         }
-        for (int j = 0; j < this->x; j++)
-        {
-            this->mask[i][j] = 0;
-        }       
+        fill(this->mask[i], this->mask[i]+x, 0);
     } 
 }
 

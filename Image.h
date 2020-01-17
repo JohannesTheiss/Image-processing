@@ -39,6 +39,9 @@ class Image
 
     private:
         void init(int,int);
+        void getGreyValues();
+        double maxGrey;
+        double minGrey;
         int x;
         int y;
         double **field;
