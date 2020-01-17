@@ -17,7 +17,7 @@ void Image::init(int x , int y)
     {
         this->field[i] = new double[y];
         if(this->field[i]==NULL){
-            cout<<"Kein Speicher"<<endl;
+            cout<<"Out of Memory"<<endl;
             exit(1);
         }
         for (int j = 0; j < y; j++)
