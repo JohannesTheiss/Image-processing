@@ -198,9 +198,8 @@ void Image::getGreyValues()
 void Image::histogram(string fname)
 {
     this->getGreyValues();
-    // histogram stuff
     // shift the start point to the right, and make negative values "positive"
-    // a bit like IEEE 754
+    // like the two's complement
     this->bias = (int)amount(this->minGrey);
     this->buffer = (int)this->maxGrey + this->bias + 1; 
     this->histo = new int[this->buffer];
